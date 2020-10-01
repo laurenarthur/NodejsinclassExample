@@ -2,6 +2,8 @@
 var express = require('express');
 //require body-parser
 var bodyParser = require("body-parser");
+//require mongoose
+var mongoose = require("mongoose");
 //create express object, call express
 var app = express();
 //get port information
@@ -11,6 +13,12 @@ const port = process.env.PORT || 3000;
 app.set('view engine', 'ejs');
 //tell app to use Body parser
 app.use(bodyParser.urlencoded({extended: true}));
+
+
+//connection information for Mongo
+const mongoDB = 'mongodb+srv://testConnection:b8RwqJYgo4hD1xhe@nodetodoexample-iqnde.mongodb.net/test?retryWrites=true&w=majority'
+mongoose.connect(mongoDB);
+
 
 //Couple of items todo
 var tasks = ["make it to class", "take child to daycare"];
