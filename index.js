@@ -16,20 +16,38 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 
 //connection information for Mongo
-const mongoDB = 'mongodb+srv://testConnection:b8RwqJYgo4hD1xhe@nodetodoexample-iqnde.mongodb.net/test?retryWrites=true&w=majority'
+const Todo = require('./models/todo.model');
+const mongoDB =  'mongodb+srv://testConnection:b8RwqJYgo4hD1xhe@nodetodoexample-iqnde.mongodb.net/test?retryWrites=true&w=majority'
 mongoose.connect(mongoDB);
-
+mongoose.Promise = global.Promise;
+let db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 //Couple of items todo
-var tasks = ["make it to class", "take child to daycare"];
+var tasks = [];
 
 //completed items
-var completed = ["extra work"];
+var completed = [];
 
 //get home page /
 app.get('/', function(req, res){
+    //query to mongoDB
+    Todo.find(function(err, todo){
+        if(err){
+           console.log(err); 
+        }else{
+            console.log(todo);
+            for(i=0, i<todo.length;i++){
+                if(todo[i].done){
+                    completed.push(todo[i].item);
+                }else{
+
+                }
+            }
+        }
+    });
     //return something to home page
-    res.render('index', {tasks: tasks}); //add completed variable to ejs ex {a:a, b:b}
+    res.render('index', {tasks: tasks, completed: complete}); //add completed variable to ejs ex {a:a, b:b}
 });
 
 //add post method /addtask
