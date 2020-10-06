@@ -18,7 +18,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 //Connection Information for Mongo
 const Todo = require('./models/todo.model');
-const mongoDB =  'mongodb+srv://arthur_lauren:<password>@cluster0.3bj1d.mongodb.net/<dbname>?retryWrites=true&w=majority'
+const mongoDB =  'mongodb+srv://arthur_lauren:Disney1998@cluster0.3bj1d.mongodb.net/<dbname>?retryWrites=true&w=majority'
+
 mongoose.connect(mongoDB);
 mongoose.Promise = global.Promise;
 let db = mongoose.connection;
@@ -36,11 +37,14 @@ app.get('/', function(req, res){
         if(err){
             console.log(err);
         }else{
+            task = [];
+            completed = [];
+            ID = [];
             for(i = 0; i< todo.length; i++){
                 if(todo[i].done){
                     completed.push(todo[i].item)
                 }else{
-                    tasks.push(todo[i].item)
+                    tasks.push(todo[i])
                 }
             }
         }
@@ -51,24 +55,47 @@ app.get('/', function(req, res){
 
 //add post method /addtask
 app.post('/addtask', function(req, res){
-    var newTask = req.body.newtask;
-    tasks.push(newTask);
-    //return index
-    res.redirect('/');
+    let newTodo = new Todo({
+        item: req.body.newtask,
+        done: false
+    })
+    newTodo.save(function(err, todo){
+        if (err){
+            console.log(err)
+        } else {
+            //return index
+            res.redirect('/');
+        }
+    });
 });
 
 app.post('/removetask', function(req, res){
-    var removeTask = req.body.check;
+    var id = req.body.check;
     //push to completed
-    if(typeof removeTask === 'string'){
-        tasks.splice(tasks.indexOf(removeTask), 1);
-    }else if(typeof removeTask === 'object'){
-        for (var i = 0; i < removeTask.length; i++){
-            tasks.splice(tasks.indexOf(removeTask[i]), 1);
+    if(typeof id === 'string'){
+        Todo.updateOne({_id: id},{done:true},function(err){
+            if(err){
+                console.log(err)
+            }
+        })
+        //tasks.splice(tasks.indexOf(removeTask), 1);
+    }else if(typeof id === 'object'){
+        for (var i = 0; i < id.length; i++){
+            Todo.updateOne({_id: id},{done:true},function(err){
+                if(err){
+                    console.log(err)
+                }
+            })
         }
-    }
+     }
     res.redirect('/');
 });
+
+app.post('/delete', function(){
+    //write the function for delete usind id
+    //handle for single and multiple delete requests (req.body.delete)
+    //Todo.deleteOne(id, function(err){})
+})
 
 //server setup
 app.listen(port, function(){
