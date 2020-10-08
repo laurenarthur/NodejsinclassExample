@@ -39,7 +39,6 @@ app.get('/', function(req, res){
         }else{
             task = [];
             completed = [];
-            ID = [];
             for(i = 0; i< todo.length; i++){
                 if(todo[i].done){
                     completed.push(todo[i].item)
@@ -81,7 +80,7 @@ app.post('/removetask', function(req, res){
         //tasks.splice(tasks.indexOf(removeTask), 1);
     }else if(typeof id === 'object'){
         for (var i = 0; i < id.length; i++){
-            Todo.updateOne({_id: id},{done:true},function(err){
+            Todo.updateOne({_id: id[i]},{done:true},function(err){
                 if(err){
                     console.log(err)
                 }
