@@ -4,6 +4,8 @@ var express = require('express');
 var bodyParser = require("body-parser");
 //require mongoose
 var mongoose = require("mongoose");
+//require node-fetch
+var fetch = require('node-fetch');
 //create express object, call express
 var app = express();
 //get port information
@@ -18,8 +20,9 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 //Connection Information for Mongo
 const Todo = require('./models/todo.model');
-const mongoDB =  'mongodb+srv://arthur_lauren:Disney1998@cluster0.3bj1d.mongodb.net/laurenexample?retryWrites=true&w=majority'
-
+//const mongoDB = 'mongodb+srv://arthur_lauren:Disney1998@cluster0.3bj1d.mongodb.net/todolist?retryWrites=true&w=majority'
+//const mongoDB = 'mongodb+srv://example_user:T9I7SERp3l6O0A9u@cluster0.jnbwk.mongodb.net/todolist?retryWrites=true&w=majority'
+const mongoDB =  'mongodb+srv://testConnection:b8RwqJYgo4hD1xhe@nodetodoexample-iqnde.mongodb.net/test?retryWrites=true&w=majority'
 mongoose.connect(mongoDB);
 mongoose.Promise = global.Promise;
 let db = mongoose.connection;
@@ -37,11 +40,11 @@ app.get('/', function(req, res){
         if(err){
             console.log(err);
         }else{
-            task = [];
+            tasks = [];
             completed = [];
             for(i = 0; i< todo.length; i++){
                 if(todo[i].done){
-                    completed.push(todo[i].item)
+                    completed.push(todo[i])
                 }else{
                     tasks.push(todo[i])
                 }
@@ -70,31 +73,68 @@ app.post('/addtask', function(req, res){
 
 app.post('/removetask', function(req, res){
     var id = req.body.check;
-    //push to completed
     if(typeof id === 'string'){
         Todo.updateOne({_id: id},{done:true},function(err){
             if(err){
                 console.log(err)
             }
+            res.redirect('/');
         })
-        //tasks.splice(tasks.indexOf(removeTask), 1);
     }else if(typeof id === 'object'){
         for (var i = 0; i < id.length; i++){
             Todo.updateOne({_id: id[i]},{done:true},function(err){
                 if(err){
                     console.log(err)
                 }
+                res.redirect('/');
             })
         }
-     }
-    res.redirect('/');
+    }
+    
 });
 
-app.post('/delete', function(){
-    //write the function for delete usind id
-    //handle for single and multiple delete requests (req.body.delete)
-    //Todo.deleteOne(id, function(err){})
+app.post('/deleteTodo', function(req, res){
+    var id = req.body.delete;
+    if(typeof id === "string"){
+        Todo.deleteOne({_id: id}, function(err){
+            if (err){
+               console.log(err)
+            }
+        });
+    }else if (typeof id === "object"){
+        for(var i = 0; i < id.length; i++){
+            Todo.deleteOne({_id: id[i]}, function(err){
+            if (err){
+                console.log(err)
+            }
+        });
+        }
+    }
+    res.redirect('/');
 })
+
+//fetch nasa information and send to front end as JSON data
+app.get('/nasa', function(req, res){
+    let nasaData;
+    fetch('https://api.nasa.gov/planetary/apod?api_key=QnieH9tuQpYJgRIL078ZuETbUyqfiyZiMwEui7AB')
+    .then(res => res.json())
+    .then(data => {
+        nasaData = data;
+        res.json(nasaData);
+    });
+})
+
+//get our data for the todo list from Mongo and send to front end as JSON
+app.get('/todoListJson', function(req, res){
+    //query to mongoDB for todos
+    Todo.find(function(err, todo){
+        if(err){
+            console.log(err);
+        }else{
+            res.json(todo);
+        }
+    });
+});
 
 //server setup
 app.listen(port, function(){
